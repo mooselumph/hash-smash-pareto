@@ -1,19 +1,23 @@
 {
   "schema_version": 3,
-  "submission_state": "draft",
-  "target_profile": "blake3-r1-prefix-v1",
+  "submission_state": "ready",
+  "target_profile": "blake3-r3-prefix-v1",
   "attack_class": "ordinary-collision",
-  "rounds": 1,
+  "rounds": 3,
   "claim": {
-    "time_log2": 128.0,
+    "time_log2": 129,
     "time_unit": "target-compressions",
-    "memory_log2_bytes": 0,
-    "preprocessing_log2": 0,
+    "memory_log2_bytes": 136,
+    "preprocessing_log2": 124,
     "success_probability": 0.39,
     "nonuniform_advice_log2_bytes": 0
   },
-  "restrictions": [],
-  "baseline_improved": "blake3-r1-nominal-v2",
+  "restrictions": [
+    "Samples exactly 2^128 independent uniform 48-byte messages. Each is one single-block chunk, hashed by exactly one 3-round compression from the fixed BLAKE3 IV, with counter 0, block length 48, and flags CHUNK_START|CHUNK_END|ROOT.",
+    "Classical 256-bit probabilistic word RAM under collision-frontier-v5 with C=638. No random-oracle, output-balance, PRNG, or differential hypothesis. Worst-case time and memory; failed trials are inside the n paid samples.",
+    "No witness, executed full search, nominal-reference improvement, or qualification is asserted. baseline_improved names the organizer nominal reference only."
+  ],
+  "baseline_improved": "blake3-r3-nominal-v2",
   "certificate_manifest": "certificates/manifest.json",
   "lane": "exploratory",
   "heuristics": []
