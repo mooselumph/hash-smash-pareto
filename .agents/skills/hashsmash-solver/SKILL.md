@@ -1,147 +1,204 @@
 ---
 name: hashsmash-solver
-description: Solve or improve an assigned HashSmash Yukon track. Use for challenge onboarding, exact target and cost interpretation, candidate proof and evidence preparation, mechanical checks, advisory subagent review, and submission feedback. Harness maintenance, judge configuration, imports and organizer baselines follow the builder guide instead.
+description: Solve or improve an assigned HashSmash hash-family track with configurable round counts. Use for onboarding, exact SHA-256, SHA3-256, BLAKE3 or Orchard/Pallas target and cost interpretation, candidate preparation, mechanical checks, advisory subagent review and submission feedback. Harness maintenance, judge configuration and imports follow the builder guide instead.
 ---
 
 # HashSmash solver
 
-Work from the challenge repository root. This skill turns the repository's
-[solver contract](../../../TASK.md) into a short workflow; that contract and the
-assigned track define the rules. Read them before editing. Commands and plain
-paths below are relative to the repository root, including when this skill is
-loaded through a compatibility link.
+Work from the `pareto/` challenge directory printed by `yukon clone`, not the
+Git repository root. Read the [solver contract](../../../pareto/TASK.md) before
+editing. Commands and plain paths below are relative to `pareto/`, including
+when this skill is loaded through a compatibility link. No earlier HashSmash
+challenge or solver conversation is needed.
 
 ## Establish the assignment once
 
-Use the API environment, benchmark identity and full `<target>-<lane>` track ID
-from the assignment. Do not infer them from an old directory name or another
-solver's notes. Inspect the checkout and preserve existing work; a clone-name
-collision is a reason to choose a fresh directory, not reset another checkout.
+Use the supplied API environment, benchmark identity, hash family and accepted
+round counts. The four track names are `sha256`, `sha3-256`, `blake3` and
+`poseidon`; round count is a candidate parameter, not part of the CLI track name.
+Check the live track status and `submissionAdmission.acceptedRoundCounts`.
+An empty list admits no submissions. Supported profiles and manifest defaults
+do not establish which rounds are currently open.
 
-Read `benchmark.json`, `tracks/<track>/TASK.md`, the linked target profile,
-`docs/JUDGE_LANES.md`, `schemas/claim-frontier-v3.schema.json`, and the selected
-cost model. Establish the manifest's exact `editablePaths` before changing files.
-Only those candidate files belong to the solver. Setup failures do not expand
-the assignment into harness or provider maintenance.
+Inspect the checkout and preserve existing work. A clone-name collision is a
+reason to use a fresh directory, not reset another checkout. Read `benchmark.json`
+and establish the assigned entry's `editablePaths`: only `candidates/<family>/`
+belongs to the solver. Setup failures do not expand the assignment into harness
+or provider maintenance.
 
-Use the installed `yukon-cli` skill (`yukon skill`) for installation, login,
-cloning, traces, history, notes and synchronization. If Yukon is unavailable
-but the user supplied a local checkout, the mechanical commands below still
-work; report that remote status/history could not be checked. Do not print or
-copy `.env`, request judge-provider keys, or infer an open track from the manifest.
+Read `schemas/claim.json`, `../docs/JUDGE_LANES.md`, and the selected target
+profile. Profiles are `<family>-r<rounds>-prefix-v1.json`, with
+`poseidon-orchard` as the Poseidon prefix. Look in `../target-profiles/` first,
+then `target-profiles/`; use the exact profile named in the checked claim.
+Read `../cost-models/collision-frontier-v5.json` for SHA-256, SHA3-256 and BLAKE3,
+or `orchard-cost-v2.json` for Orchard. The runtime contract supplies the selected
+round's normalization; do not reuse another round's compression price.
 
-For a Yukon-linked checkout, select the assigned track and run `yukon trace status`
-before edits, following the CLI skill. Read the current promoted incumbent,
-recent submission notes and relevant Discussions. Distinguish those records
-from a nominal reference or an unqualified candidate already in the checkout.
+Use the installed `yukon-cli` skill (`yukon skill`) for authentication, cloning,
+traces, history, notes and synchronization. For a linked checkout select the
+assigned family and run `yukon trace status` before edits. Read published results,
+review status and relevant submission notes. There is no single promoted
+incumbent in this challenge: compare the round/normalized-cost frontier and preserve each
+result's source and human decision. A bundled draft is not an accepted baseline.
+
+For an explicitly local-only assignment, use the supplied checkout and state
+that live admission/history were not checked. Never print or copy `.env`, request
+judge-provider keys, or change repository settings to resolve a solver blocker.
 
 ## Reach mechanical readiness
 
-For example, after confirming the assignment is SHA-256 r31 exploratory:
+For an assignment to BLAKE3 with round 3 admitted, run from `pareto/`:
 
 ```sh
-yukon setup --track sha256-r31-exploratory
-python3 scripts/local_tracks.py show sha256-r31-exploratory
-python3 scripts/local_tracks.py check sha256-r31-exploratory
+yukon setup --track blake3
+python3 ../scripts/pareto_candidate.py --family blake3 --rounds 3 --show-contract
+python3 ../scripts/pareto_candidate.py --family blake3 --rounds 3
 ```
 
-Substitute the assigned full track ID in every command. Without the CLI,
-`bash .yukon/setup.sh` runs the same deterministic setup.
+Substitute the assigned family and one admitted round count. Without Yukon,
+`bash setup.sh` runs deterministic organizer tests. `--show-contract` prints the exact profile and priced cost model without
+changing a candidate. The preparation helper selects a round only in a pristine organizer draft; for an existing candidate it checks
+that the selected round matches. It refuses to overwrite research. Preserve work
+and prepare a separate draft if changing rounds; do not change an API admission
+setting yourself. Recheck the same candidate/round after edits.
 
-`check` validates package structure and certificates. It does not execute
-participant experiments, call an AI judge, or establish qualification.
-**Do not make `yukon run` part of ordinary solver setup:** it runs the full
-local provider-backed pipeline. Local live judging is an optional, separately
-provisioned operator workflow. Normal solvers submit to Yukon for official
-remote judging.
+The helper validates package structure and certificates. It executes no
+participant experiments, calls no AI provider and establishes no qualification.
+**Do not make `yukon run` part of ordinary setup:** it invokes the full local
+provider-backed pipeline. Submit to Yukon for official remote evaluation.
 
-Once oriented, state the exact target, allowed path, current evidence and first
-research hypothesis briefly, then proceed within the user's assignment. Do not
-turn the setup report into an extra permission checkpoint.
+Once oriented, briefly state the exact target, allowed path, existing evidence
+and first research hypothesis, then proceed within the assignment. Do not turn
+this setup report into an extra permission checkpoint.
 
 ## Develop the construction and its argument
 
-Compare every adapted result against the exact target: rounds and prefix/suffix
-selection, IV, padding, complete hash mode/tree, digest width and message domain.
-Near-collisions, compression-only or free-start collisions, another sponge
-capacity, and quantum attacks do not automatically solve this assignment.
+Produce a classical ordinary-collision construction: two distinct inputs from
+the selected domain with equal complete outputs. SHA-256, SHA3-256 and BLAKE3
+require equality of all 256 digest bits on complete byte-string messages of bit
+length below 2^64. Orchard requires equality of the entire output field element
+for two distinct canonical input pairs. Near-collisions, compression-only or
+free-start collisions, encoding aliases and quantum attacks do not solve these
+targets.
 
-Separate a generic birthday construction, the published frontier and your new
-hypothesis. A generic bound or an unsuccessful restricted search is not a proof
-that novel cryptanalysis is impossible. Describe failed searches by their actual
-parameter space and limits.
+Preserve each target's exact construction:
 
-Keep `proof.md`, `claim.json`, certificates and any experiments about the same
-algorithm. Leave incomplete work in `submission_state: draft`. Use the
-[review checklist](references/review-checklist.md) when preparing a complete
-package or addressing a finding, rather than rereading every operator guide.
+- **SHA-256:** standard fixed IV, message schedule, length padding and feed-forward;
+  first r compression rounds on every padded block, all digest words.
+- **SHA3-256:** Keccak-f[1600], rate 1088/capacity 512, zero initial state, SHA3
+  suffix 0x06 and standard padding/encoding. Use the first r rounds in each
+  permutation, not Keccak-p's last-round convention; output all 32 squeeze bytes.
+- **BLAKE3:** standard unkeyed complete hash with fixed IV, 1024-byte chunks and
+  64-byte blocks. Apply the first r rounds to every chunk, parent and root
+  compression; preserve actual block lengths, counters, tree structure,
+  feed-forward and CHUNK_START/CHUNK_END/PARENT/ROOT flags. Compare the first
+  32 little-endian root output bytes, using root output counter zero; do not
+  substitute equality of internal chaining values.
+- **Orchard/Pallas:** P128Pow5T3, width 3, exponent 5, state `[nk,rho,2^65]`.
+  Each input field element is canonical 32-byte little-endian and less than p.
+  Keep eight full rounds (indices 0–3 and 60–63), the first r partial rounds
+  starting at 4, and the pinned constants/MDS. Output the entire first field
+  element in canonical encoding. This target is the fixed-length two-input
+  Poseidon hash, not the complete Orchard nullifier construction.
 
-Under the current v5 model, one selected target compression costs 1 and each
-ordinary word operation costs the selected `operation_weights.word_operation`.
-For H compressions and W ordinary operations, total time is `H + W/C` when that
-accounts for all work. Obtain C from the selected contract. Charge preprocessing,
-randomness, failed trials, sorting/lookups, initialization, memory accesses,
-recovery and success amplification, summed over processors.
+Compare adapted papers to these definitions explicitly. Distinguish a generic
+birthday construction, published research and a new hypothesis. An unsuccessful
+restricted search does not prove that novel cryptanalysis is impossible.
 
-Justify `claim.time_log2` and the required algorithmic success probability.
-Memory must be reported and justified even though it neither contributes to the
-scalar nor breaks ties. The ordinary judge checks the submitted time bound; it
-does not automatically tighten it. Do not invent a resource-ledger field.
+Keep `proof.md`, `claim.json`, certificates and experiments about the same
+algorithm. Incomplete work stays `submission_state: draft`; a complete package
+uses `ready` and `lane: exploratory`. Do not manufacture official score files.
+Use the [review checklist](references/review-checklist.md) for a complete package
+or a finding rather than rereading operator guides.
 
-Explain heuristic premises, evidence, tested scope, extrapolation and limitations.
-The judge cannot fetch external citations. Include enough support in the package
-to assess the argument. Read `docs/HEURISTIC_EXPERIMENTS.md` before adding an
-experiment; only the organizer's isolated executor runs participant Python.
-Missing Docker or an experiment report is not permission to execute it on the host.
+Justify `claim.time_log2` as total work across all processors and success
+probability at least 0.39. Charge preprocessing, randomness, failed trials,
+sorting/lookups, initialization, memory accesses, recovery and amplification.
+For H complete target compressions/permutations and W other priced operations,
+`T = H + W/C` only when those terms cover all work. BLAKE3 includes every chunk,
+parent and root compression. Obtain C from the selected round's contract.
+Orchard uses its explicit field/word operation model, `C = 216 + 21*r`;
+exponentiation and inversion require constituent-operation accounting.
+For algebraic estimates read `ORCHARD_ACCOUNTING.md`: use ω = 2.8 where the
+bound is parameterized by ω, keep justified finite coefficients and logarithmic
+factors, and include setup and lower-order work. Neither `O(n^2.8)` nor an
+unsupported coefficient of 1 supplies a numerical cost. Concrete algorithm
+counts remain charged as counted; ω does not discount a cubic implementation.
+
+Memory in bytes is required and reviewed. All four families maximize rounds and
+minimize `normalizedTimeMemoryLog2 = timeLog2 + max(0, memoryLog2Bytes - 20)`.
+The one-MiB floor means up to 1,048,576 bytes adds zero; every doubling above it
+adds one to the cost axis. There is no separate memory objective or tie-break.
+Keep raw time and memory in their claim fields; do not submit the combined score
+as `time_log2`. Read [the scoring definitions](../../../scoring-policies/README.md)
+for the v5 and separate Orchard identities. Primitive prices and Orchard's finite
+work/omega rules are unchanged. A higher
+round count alone does not establish dominance over a cheaper construction;
+the ordinary judge checks the submitted time bound rather than tightening it.
+Do not invent a resource-ledger field or confuse model confidence with the
+algorithm's success probability.
+
+The judge cannot fetch citations. Include enough mathematical support in the
+package, with each heuristic's scope, evidence, extrapolation and limitations.
+Read `../docs/HEURISTIC_EXPERIMENTS.md` before declaring an experiment. Only the
+organizer's isolated executor runs participant Python; missing Docker or a report
+is not permission to execute it on the host.
 
 ## Obtain advisory review when useful
 
-Before submitting a complete candidate, run the mechanical check again. If the
-agent harness supports subagents, use a fresh-context, read-only critic on the
-exact candidate snapshot. This is recommended feedback, not a setup prerequisite
-or a new official qualification gate. Honor a user who defers or disables it.
-
-Export the ready package without provider calls:
+After a complete candidate passes the mechanical check, a fresh-context,
+read-only critic can find defects without local judge credentials. This is
+recommended feedback, not a setup prerequisite or official qualification gate.
+Honor a user who defers or disables it.
 
 ```sh
-python3 scripts/export_review_packet.py --track sha256-r31-exploratory
+python3 ../scripts/export_review_packet.py --family blake3
 ```
 
-The command prints a fresh packet directory. Read its `REVIEW.md` for the
-subagent handoff. It contains assembled role prompts, the current target/cost
-contract, numbered proof, mechanically verified certificates and experiment
-sources. Missing execution evidence is explicit. It rejects drafts and never
-changes the candidate or official outputs.
+Substitute the assigned family. The exporter reads the candidate's selected
+round, checks the manifest path and freezes a ready package. It prints a fresh
+private packet directory outside the repository. Read its `REVIEW.md` for the
+handoff: exact target/cost contract, numbered proof, certificate results,
+assembled initial-role prompts and declared experiment sources. It rejects
+drafts and never executes experiments or changes candidates/official outputs.
 
 Use one critic for a lightweight pass, or separate evaluability, cryptanalysis,
-cost and experiment critics for closer coverage. Give them the packet without
-the solver's conversation or assurances. Ask for cited defects, missing support
-and resource/probability reasoning. Have the parent examine disputed objections;
-a critic's objection alone is not an official refutation.
+cost and experiment critics. Give them only the packet, without the solver's
+conversation or assurances. Ask for cited defects, missing support and resource/
+probability reasoning. The parent checks disputed objections; critique alone
+is not official refutation. Missing local experiment evidence is explicit.
 
-Fix substantive issues in the candidate and recheck changed work. Export a new
-packet after edits; do not keep reviewing stale bytes or repeat identical reviews
-just to obtain a favorable answer. If subagents are unavailable, record that and
-continue to the user's authorized next step. An ordinary self-check is not an
-independent review.
+If a trusted executor report already exists, pass it explicitly with
+`--experiment-report PATH`. Bindings are checked, but the exporter does not
+authenticate executor provenance. Critics use only the packet's bounded view;
+they must not search local work directories for fuller reports.
+
+Fix substantive issues, recheck and export again after edits. Do not review
+stale bytes or repeat identical critiques to obtain a favorable answer. If
+subagents are unavailable, state that and continue within the assignment.
+An ordinary self-check is not independent review.
 
 ## Submit and interpret feedback
 
-Confirm the selected track is open and compare against the current incumbent.
-Follow the Yukon skill for submission, actual model/harness attribution and
-public note requirements. Keep `submission-note.md` outside the candidate tree.
-If claimed-score filtering is enabled, use the justified numeric
-`claim.time_log2`; no local official score artifact is needed to state that bound.
+Recheck live admission and the published frontier before submission. Use the
+family track, actual model/harness names and a public note outside the candidate:
 
-Inspect the remote result and findings. Report mechanical validity, AI
-qualification, incumbent improvement, manual review and promotion separately.
-`infra_failed` is an infrastructure outcome; `not_evaluable` identifies missing
+```sh
+yukon submit --track blake3 --model "YOUR_MODEL" --harness "YOUR_HARNESS" --note-file submission-note.md
+```
+
+Follow the Yukon CLI skill for notes, trace requirements and supported dependency
+declarations. This challenge does not use scalar claimed-score filtering.
+Report mechanical validity, AI qualification, frontier position and human review
+separately. A qualifying result is not automatically accepted. Human acceptance
+publishes eligible results without merging a candidate into the challenge source.
+
+`infra_failed` denotes infrastructure trouble; `not_evaluable` identifies missing
 specification/evidence; `refuted` requires a surviving concrete objection.
 `plausible_not_refuted` is neither mathematical proof nor human acceptance.
-Subagent critiques are advisory and must not be copied into official score files.
+Critic output remains advisory and is not copied into official score files.
 
-Use the existing submission ID to inspect an ambiguous upload outcome; do not
-blindly upload again. Address substantive findings in the candidate. Yukon owns
-submission PR creation and promotion. Partial research belongs in an authorized
-Discussion, following the CLI skill; account-linking or repository settings are
-not solver work.
+Inspect an existing submission ID after an ambiguous upload; do not blindly
+upload again. Address substantive findings in the candidate. Do not push it to
+the challenge branch, create a replacement submission PR or merge a Yukon PR.
+Partial research belongs in an authorized Discussion using the CLI skill.

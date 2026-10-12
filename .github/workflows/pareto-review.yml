@@ -1,0 +1,148 @@
+name: Pareto HashSmash review
+
+on:
+  workflow_call:
+    inputs:
+      family:
+        required: true
+        type: string
+      yukon_evaluation:
+        required: true
+        type: string
+    secrets:
+      OPENAI_API_KEY:
+        required: false
+      OPENROUTER_API_KEY:
+        required: false
+      AWS_BEARER_TOKEN_BEDROCK:
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  intake:
+    name: Setup and deterministic experiments
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      HASHSMASH_SELECTED_FAMILY: ${{ inputs.family }}
+      YUKON_EVALUATION: ${{ inputs.yukon_evaluation }}
+    steps:
+      - name: Checkout dispatched commit
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check the trusted adapter
+        run: bash pareto/setup.sh
+      - name: Benchmark deterministic intake and experiments
+        run: python3 scripts/pareto_pipeline.py intake --family "$HASHSMASH_SELECTED_FAMILY"
+      - name: Upload trusted experiment artifacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: hashsmash-intake-${{ inputs.family }}-pareto
+          path: pareto/.yukon/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  judge:
+    name: Benchmark paired judges
+    needs: intake
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      HASHSMASH_SELECTED_FAMILY: ${{ inputs.family }}
+      YUKON_EVALUATION: ${{ inputs.yukon_evaluation }}
+    steps:
+      - name: Checkout dispatched commit
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download this run's experiment artifacts
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: hashsmash-intake-${{ inputs.family }}-pareto
+          path: pareto/.yukon/
+      - name: Validate judge provider
+        env:
+          HASHSMASH_JUDGE_PROVIDER: ${{ vars.HASHSMASH_JUDGE_PROVIDER || 'openrouter' }}
+        run: |
+          case "$HASHSMASH_JUDGE_PROVIDER" in
+            openrouter|bedrock|openai) ;;
+            *) echo "Unsupported HASHSMASH_JUDGE_PROVIDER" >&2; exit 2 ;;
+          esac
+      - name: Benchmark Amazon Bedrock paired review
+        if: ${{ vars.HASHSMASH_JUDGE_PROVIDER == 'bedrock' }}
+        env:
+          AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
+          HASHSMASH_JUDGE_PROVIDER: bedrock
+          HASHSMASH_BEDROCK_MODEL: ${{ vars.HASHSMASH_BEDROCK_MODEL || 'us.openai.gpt-5.6-sol' }}
+          HASHSMASH_BEDROCK_REGION: ${{ vars.HASHSMASH_BEDROCK_REGION || 'us-east-1' }}
+          HASHSMASH_JUDGE_MODE: committee
+          HASHSMASH_REASONING_EFFORT: high
+        run: python3 scripts/pareto_pipeline.py judge --family "$HASHSMASH_SELECTED_FAMILY"
+      - name: Benchmark OpenRouter paired review
+        if: ${{ vars.HASHSMASH_JUDGE_PROVIDER == '' || vars.HASHSMASH_JUDGE_PROVIDER == 'openrouter' }}
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          HASHSMASH_JUDGE_PROVIDER: openrouter
+          HASHSMASH_JUDGE_MODEL: openai/gpt-5.6-sol
+          HASHSMASH_JUDGE_MODE: committee
+          HASHSMASH_OPENROUTER_ZDR: 'true'
+          HASHSMASH_REASONING_EFFORT: high
+        run: python3 scripts/pareto_pipeline.py judge --family "$HASHSMASH_SELECTED_FAMILY"
+      - name: Benchmark OpenAI paired review
+        if: ${{ vars.HASHSMASH_JUDGE_PROVIDER == 'openai' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          HASHSMASH_JUDGE_PROVIDER: openai
+          HASHSMASH_OPENAI_MODEL: ${{ vars.HASHSMASH_OPENAI_MODEL }}
+          HASHSMASH_JUDGE_MODE: committee
+          HASHSMASH_REASONING_EFFORT: high
+        run: python3 scripts/pareto_pipeline.py judge --family "$HASHSMASH_SELECTED_FAMILY"
+      - name: Upload review dossier
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: hashsmash-review-${{ inputs.family }}-pareto
+          path: pareto/.yukon/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+
+  score:
+    name: Benchmark selected lane score
+    needs: judge
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      HASHSMASH_SELECTED_FAMILY: ${{ inputs.family }}
+      YUKON_EVALUATION: ${{ inputs.yukon_evaluation }}
+    steps:
+      - name: Checkout dispatched commit
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download this run's review dossier
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: hashsmash-review-${{ inputs.family }}-pareto
+          path: pareto/.yukon/
+      - name: Benchmark trusted score
+        run: python3 scripts/pareto_pipeline.py score --family "$HASHSMASH_SELECTED_FAMILY"
+      - name: Stage exact Yukon score path
+        run: python3 scripts/stage_pareto_score.py --family "$HASHSMASH_SELECTED_FAMILY" --destination "$RUNNER_TEMP/yukon-score-artifact"
+      - name: Upload score
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: benchmark-score-${{ inputs.family }}-pareto
+          path: ${{ runner.temp }}/yukon-score-artifact/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

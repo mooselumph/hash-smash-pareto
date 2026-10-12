@@ -6,6 +6,11 @@ authoritative. These questions supplement them with recurring failure cases.
 
 ## Target and construction
 
+- Is the selected family open, and is this candidate round in its live admission
+  list? CLI commands use the family name, while the claim selects the round.
+- For Orchard, are both input fields canonical and is the entire output field
+  equal? Preserve the eight fixed full rounds, constants/MDS and capacity.
+
 - Do the two messages meet the domain, differ, and collide on the complete
   selected hash and all required digest bits?
 - Does a paper use the same IV, padding, rounds, capacity, digest length and
@@ -41,8 +46,11 @@ authoritative. These questions supplement them with recurring failure cases.
 - Are table regions disjoint, addresses representable, and indexing operations
   charged? Include scratch buffers, code, constants and retained randomness in
   memory. Uninitialized storage needs an explicit valid access argument.
+- Does the combined cost use `timeLog2 + max(0, memoryLog2Bytes - 20)`, with
+  the one-MiB floor and the correct v5 or Orchard scoring policy? Keep raw total
+  time and memory bounds in the claim; the adapter computes the combined score.
 - Does the final logarithmic bound round conservatively and justify the stated
-  success probability? A nominal exponent is not the current promoted score.
+  success probability? A nominal exponent is not the current published frontier.
 
 ## Package and feedback
 
@@ -59,4 +67,4 @@ authoritative. These questions supplement them with recurring failure cases.
   exact evidence. Avoid asking successive critics until one agrees.
 - A private preflight and a remote qualification can disagree. Preserve the
   distinction between advisory feedback, official AI review, human acceptance
-  and successful promotion.
+  and publication.

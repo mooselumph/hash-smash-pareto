@@ -67,8 +67,8 @@ official refutation. Keep substantive criticism distinct from these limitations.
 The parent checks disputed objections against the packet, fixes supported issues,
 and exports again after edits. This is not the official defender/adjudicator
 process. Do not retry unchanged material merely to obtain a favorable review.
-Only Yukon remote judging can supply an official submission result; promotion
-and human acceptance remain separate.
+Only Yukon remote judging can supply an official submission result; AI
+qualification, human acceptance and publication remain separate.
 """
 
 
@@ -83,6 +83,26 @@ def active_track(track_id: str):
     track = get_frontier_track(track_id)
     if matches[0]["editablePaths"] != [track.candidate.relative_to(ROOT).as_posix()]:
         raise VerificationError("manifest candidate path differs from the organizer registry")
+    return track
+
+
+def active_family(family: str):
+    """Bind a configurable-round candidate to its exact family manifest entry."""
+    from pareto.targets import FAMILIES
+    from scripts.pareto_pipeline import select_track
+
+    if family not in FAMILIES:
+        raise VerificationError("select one hash family: sha256, sha3-256, blake3 or poseidon")
+    challenge_root = ROOT / "pareto"
+    manifest = load_json_bytes((challenge_root / "benchmark.json").read_bytes(), "pareto/benchmark.json")
+    if manifest.get("schemaVersion") != 2:
+        raise VerificationError("family review export requires the schema-v2 manifest")
+    matches = [entry for entry in manifest["tracks"] if entry["name"] == family]
+    if len(matches) != 1 or matches[0].get("mode") != "pareto":
+        raise VerificationError("select one configured Pareto family from benchmark.json")
+    track = select_track(family)
+    if matches[0]["editablePaths"] != [track.candidate.relative_to(challenge_root).as_posix()]:
+        raise VerificationError("manifest candidate path differs from the organizer family registry")
     return track
 
 
@@ -245,12 +265,15 @@ def write_packet(packet: dict, *, candidate: Path, output_dir: Path | None = Non
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--track", required=True, help="active full target-lane ID")
+    selection = parser.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--track", help="fixed-round full target-lane ID")
+    selection.add_argument("--family", choices=("sha256", "sha3-256", "blake3", "poseidon"),
+                           help="hash family; rounds are read from its candidate")
     parser.add_argument("--output-dir", type=Path, help="new directory outside the repository")
     parser.add_argument("--experiment-report", type=Path, help="explicit trusted executor artifact, if available")
     args = parser.parse_args(argv)
     try:
-        track = active_track(args.track)
+        track = active_family(args.family) if args.family else active_track(args.track)
         packet = build_packet(track, experiment_report=args.experiment_report)
         destination = write_packet(packet, candidate=track.candidate, output_dir=args.output_dir)
     except (VerificationError, OSError, ValueError) as error:

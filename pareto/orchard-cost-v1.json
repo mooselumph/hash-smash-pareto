@@ -1,0 +1,21 @@
+{
+  "id": "orchard-field-ram-v1",
+  "version": 1,
+  "attack_class": "ordinary-collision",
+  "time_unit": "target-compressions",
+  "score": "log2(total charged time)",
+  "direction": "lower-is-better",
+  "minimum_success_probability": 0.39,
+  "computation_model": "Classical probabilistic Pallas field RAM with 256-bit words. One selected-round Orchard permutation is one target-compression unit. One field addition, subtraction or multiplication, or one primitive 256-bit word operation, costs 1/C. Inversion and exponentiation are NOT primitive: charge their constituent operations. C = 216 + 21*r for r partial rounds, using three multiplications per x^5 and the dense 3x3 MDS. This model is specific to Orchard; do not compare its normalized scores across hash families.",
+  "primitive_operations": ["canonical Pallas field addition/subtraction", "canonical Pallas field multiplication", "256-bit load/store", "256-bit modular addition/subtraction", "bitwise AND/OR/XOR/NOT", "shift or rotation", "comparison", "conditional branch", "independent uniform random 256-bit word"],
+  "total_time_includes": ["preprocessing", "field sampling and rejection", "message/differential construction", "all failed and successful trials", "sorting and lookup", "collision checking", "restart and success amplification"],
+  "memory_includes": ["code", "nonuniform advice", "precomputed data", "messages", "working state", "tables", "retained randomness"],
+  "parallel_computation": "Charge total work summed across all processors, not parallel latency.",
+  "memory_scoring": "Required and reviewed as a metric only; no Pareto objective or tie-break.",
+  "score_metric": "timeLog2",
+  "nonuniform_advice": "Charge all construction/preprocessing and advice; a stored collision is not a cheap construction.",
+  "probability_space": "Fresh independent algorithmic coins, fixed selected target. Seeded experiments do not prove ideal randomness.",
+  "heuristics": "Apply the original paired-lanes-v1 qualification criteria.",
+  "nominal_reference": "log2(Pallas field cardinality)/2, approximately 127; not a qualified baseline or proven concrete cost.",
+  "quantum": "Quantum algorithms are out of scope."
+}

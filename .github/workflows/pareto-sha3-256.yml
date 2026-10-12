@@ -1,0 +1,23 @@
+name: Pareto sha3-256
+on:
+  workflow_dispatch:
+    inputs:
+      yukon_evaluation:
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: hashsmash-pareto-sha3-256-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  review:
+    uses: ./.github/workflows/pareto-review.yml
+    with:
+      family: sha3-256
+      yukon_evaluation: ${{ inputs.yukon_evaluation }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}

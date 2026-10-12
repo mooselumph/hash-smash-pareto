@@ -10,3 +10,4 @@ lanes/*/.yukon/work/
 __pycache__/
 *.py[cod]
 .DS_Store
+pareto/.yukon/

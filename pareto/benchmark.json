@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 2,
+  "name": "hashsmash-pareto",
+  "tracks": [
+    {
+      "name": "sha256",
+      "description": "HashSmash sha256 round/cost Pareto lane; original exploratory judge and manual human review.",
+      "category": "cryptanalysis",
+      "mode": "pareto",
+      "objectives": [
+        {
+          "name": "rounds",
+          "direction": "+"
+        },
+        {
+          "name": "normalizedTimeMemoryLog2",
+          "direction": "-"
+        }
+      ],
+      "paretoPolicies": {
+        "scoring": {
+          "id": "hashsmash-scalar-tm-v1",
+          "definitionSha256": "65f6bd3eb8260395d5a9520ebe14be10f68efba6bf4625d9cebef2221b832c2d",
+          "scoreMetric": "normalizedTimeMemoryLog2",
+          "sourceCostModelId": "collision-frontier-v5",
+          "timeUnit": "target-compressions",
+          "objectives": [
+            {
+              "name": "rounds",
+              "direction": "+"
+            },
+            {
+              "name": "normalizedTimeMemoryLog2",
+              "direction": "-"
+            }
+          ]
+        },
+        "validity": {
+          "id": "paired-lanes-v1",
+          "lane": "exploratory"
+        }
+      },
+      "submissionAdmission": {
+        "acceptedRoundCounts": []
+      },
+      "promotionMode": "manual",
+      "editablePaths": [
+        "candidates/sha256"
+      ],
+      "setupCommand": [
+        "bash",
+        "setup.sh"
+      ],
+      "benchmarkCommand": [
+        "python3",
+        "../scripts/pareto_pipeline.py",
+        "all",
+        "--family",
+        "sha256"
+      ],
+      "scorePath": ".yukon/scores/sha256.json",
+      "runner": {
+        "provider": "github-actions",
+        "workflow": "pareto-sha256.yml",
+        "scoreArtifactName": "benchmark-score-sha256-pareto"
+      }
+    },
+    {
+      "name": "sha3-256",
+      "description": "HashSmash sha3-256 round/cost Pareto lane; original exploratory judge and manual human review.",
+      "category": "cryptanalysis",
+      "mode": "pareto",
+      "objectives": [
+        {
+          "name": "rounds",
+          "direction": "+"
+        },
+        {
+          "name": "normalizedTimeMemoryLog2",
+          "direction": "-"
+        }
+      ],
+      "paretoPolicies": {
+        "scoring": {
+          "id": "hashsmash-scalar-tm-v1",
+          "definitionSha256": "65f6bd3eb8260395d5a9520ebe14be10f68efba6bf4625d9cebef2221b832c2d",
+          "scoreMetric": "normalizedTimeMemoryLog2",
+          "sourceCostModelId": "collision-frontier-v5",
+          "timeUnit": "target-compressions",
+          "objectives": [
+            {
+              "name": "rounds",
+              "direction": "+"
+            },
+            {
+              "name": "normalizedTimeMemoryLog2",
+              "direction": "-"
+            }
+          ]
+        },
+        "validity": {
+          "id": "paired-lanes-v1",
+          "lane": "exploratory"
+        }
+      },
+      "submissionAdmission": {
+        "acceptedRoundCounts": []
+      },
+      "promotionMode": "manual",
+      "editablePaths": [
+        "candidates/sha3-256"
+      ],
+      "setupCommand": [
+        "bash",
+        "setup.sh"
+      ],
+      "benchmarkCommand": [
+        "python3",
+        "../scripts/pareto_pipeline.py",
+        "all",
+        "--family",
+        "sha3-256"
+      ],
+      "scorePath": ".yukon/scores/sha3-256.json",
+      "runner": {
+        "provider": "github-actions",
+        "workflow": "pareto-sha3-256.yml",
+        "scoreArtifactName": "benchmark-score-sha3-256-pareto"
+      }
+    },
+    {
+      "name": "blake3",
+      "description": "HashSmash blake3 round/cost Pareto lane; original exploratory judge and manual human review.",
+      "category": "cryptanalysis",
+      "mode": "pareto",
+      "objectives": [
+        {
+          "name": "rounds",
+          "direction": "+"
+        },
+        {
+          "name": "normalizedTimeMemoryLog2",
+          "direction": "-"
+        }
+      ],
+      "paretoPolicies": {
+        "scoring": {
+          "id": "hashsmash-scalar-tm-v1",
+          "definitionSha256": "65f6bd3eb8260395d5a9520ebe14be10f68efba6bf4625d9cebef2221b832c2d",
+          "scoreMetric": "normalizedTimeMemoryLog2",
+          "sourceCostModelId": "collision-frontier-v5",
+          "timeUnit": "target-compressions",
+          "objectives": [
+            {
+              "name": "rounds",
+              "direction": "+"
+            },
+            {
+              "name": "normalizedTimeMemoryLog2",
+              "direction": "-"
+            }
+          ]
+        },
+        "validity": {
+          "id": "paired-lanes-v1",
+          "lane": "exploratory"
+        }
+      },
+      "submissionAdmission": {
+        "acceptedRoundCounts": []
+      },
+      "promotionMode": "manual",
+      "editablePaths": [
+        "candidates/blake3"
+      ],
+      "setupCommand": [
+        "bash",
+        "setup.sh"
+      ],
+      "benchmarkCommand": [
+        "python3",
+        "../scripts/pareto_pipeline.py",
+        "all",
+        "--family",
+        "blake3"
+      ],
+      "scorePath": ".yukon/scores/blake3.json",
+      "runner": {
+        "provider": "github-actions",
+        "workflow": "pareto-blake3.yml",
+        "scoreArtifactName": "benchmark-score-blake3-pareto"
+      }
+    },
+    {
+      "name": "poseidon",
+      "description": "HashSmash poseidon round/cost Pareto lane; original exploratory judge and manual human review.",
+      "category": "cryptanalysis",
+      "mode": "pareto",
+      "objectives": [
+        {
+          "name": "rounds",
+          "direction": "+"
+        },
+        {
+          "name": "normalizedTimeMemoryLog2",
+          "direction": "-"
+        }
+      ],
+      "paretoPolicies": {
+        "scoring": {
+          "id": "hashsmash-orchard-tm-v1",
+          "definitionSha256": "497b0e3c33b57ab31fa79c957c22290327c50238793754184d48c93a86e363d7",
+          "scoreMetric": "normalizedTimeMemoryLog2",
+          "sourceCostModelId": "orchard-field-ram-v2",
+          "timeUnit": "target-compressions",
+          "objectives": [
+            {
+              "name": "rounds",
+              "direction": "+"
+            },
+            {
+              "name": "normalizedTimeMemoryLog2",
+              "direction": "-"
+            }
+          ]
+        },
+        "validity": {
+          "id": "paired-lanes-v1",
+          "lane": "exploratory"
+        }
+      },
+      "submissionAdmission": {
+        "acceptedRoundCounts": []
+      },
+      "promotionMode": "manual",
+      "editablePaths": [
+        "candidates/poseidon"
+      ],
+      "setupCommand": [
+        "bash",
+        "setup.sh"
+      ],
+      "benchmarkCommand": [
+        "python3",
+        "../scripts/pareto_pipeline.py",
+        "all",
+        "--family",
+        "poseidon"
+      ],
+      "scorePath": ".yukon/scores/poseidon.json",
+      "runner": {
+        "provider": "github-actions",
+        "workflow": "pareto-poseidon.yml",
+        "scoreArtifactName": "benchmark-score-poseidon-pareto"
+      }
+    }
+  ]
+}
