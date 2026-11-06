@@ -1,20 +1,20 @@
 {
-  "schema_version": 3,
-  "submission_state": "draft",
-  "target_profile": "blake3-r1-prefix-v1",
   "attack_class": "ordinary-collision",
-  "rounds": 1,
-  "claim": {
-    "time_log2": 128.0,
-    "time_unit": "target-compressions",
-    "memory_log2_bytes": 0,
-    "preprocessing_log2": 0,
-    "success_probability": 0.39,
-    "nonuniform_advice_log2_bytes": 0
-  },
-  "restrictions": [],
-  "baseline_improved": "blake3-r1-nominal-v2",
+  "baseline_improved": "blake3-r3-nominal-v2",
   "certificate_manifest": "certificates/manifest.json",
+  "claim": {
+    "memory_log2_bytes": 20,
+    "nonuniform_advice_log2_bytes": 0,
+    "preprocessing_log2": 31,
+    "success_probability": 0.39,
+    "time_log2": 242.39,
+    "time_unit": "target-compressions"
+  },
+  "heuristics": [],
   "lane": "exploratory",
-  "heuristics": []
+  "restrictions": [],
+  "rounds": 3,
+  "schema_version": 3,
+  "submission_state": "ready",
+  "target_profile": "blake3-r3-prefix-v1"
 }
