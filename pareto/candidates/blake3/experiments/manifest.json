@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "experiments": [
+    {
+      "id": "rho12",
+      "kind": "python-message-pairs-v1",
+      "scope": "Fixed selected BLAKE3-r3 complete 64-byte messages; 12-bit low-output projected salted walks, bounded Floyd and predecessor recovery at 1.5 times square-root state-space cap. Every supplied seed is retained. Salt is the supplied seed and start is derived with SHA-256 domain separation. These are reproducible seeded values, not a proof of independent ideal attack coins.",
+      "hypothesis": "Projected salted target walks admit distinct-predecessor mask collisions within bounded Floyd detection and recovery. This tests finite projection behavior only, not full 256-bit collisions or full-scale success probability.",
+      "program": "experiments/rho_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ff0f000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "rho16",
+      "kind": "python-message-pairs-v1",
+      "scope": "Fixed selected BLAKE3-r3 complete 64-byte messages; 16-bit low-output projected salted walks, bounded Floyd and predecessor recovery at 1.5 times square-root state-space cap. Every supplied seed is retained. Salt is the supplied seed and start is derived with SHA-256 domain separation. These are reproducible seeded values, not a proof of independent ideal attack coins.",
+      "hypothesis": "Projected salted target walks admit distinct-predecessor mask collisions within bounded Floyd detection and recovery. This tests finite projection behavior only, not full 256-bit collisions or full-scale success probability.",
+      "program": "experiments/rho_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ffff000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  ]
+}
