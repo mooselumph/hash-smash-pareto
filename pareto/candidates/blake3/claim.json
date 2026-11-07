@@ -1,20 +1,37 @@
 {
-  "schema_version": 3,
-  "submission_state": "draft",
-  "target_profile": "blake3-r1-prefix-v1",
   "attack_class": "ordinary-collision",
-  "rounds": 1,
-  "claim": {
-    "time_log2": 128.0,
-    "time_unit": "target-compressions",
-    "memory_log2_bytes": 0,
-    "preprocessing_log2": 0,
-    "success_probability": 0.39,
-    "nonuniform_advice_log2_bytes": 0
-  },
-  "restrictions": [],
-  "baseline_improved": "blake3-r1-nominal-v2",
+  "baseline_improved": "blake3-r3-nominal-v2",
   "certificate_manifest": "certificates/manifest.json",
+  "claim": {
+    "memory_log2_bytes": 20,
+    "nonuniform_advice_log2_bytes": 0,
+    "preprocessing_log2": 31,
+    "success_probability": 0.39,
+    "time_log2": 128.257,
+    "time_unit": "target-compressions"
+  },
+  "heuristics": [
+    {
+      "id": "H-checkpoint256",
+      "statement": "For the fixed complete BLAKE3-r3 and f_S(x)=F(LE32(S)||LE32(x)), independent uniform full-width salt and start have positive orbit tail, cycle length at least2^116, and tail-plus-cycle length at most2^128 with probability at least0.39.",
+      "role": "score-critical",
+      "scope": "Exactly the salted64-byte full256-bit state injection and single bounded sparse-checkpoint attempt.",
+      "extrapolation": "Transfer the explicit finite random-mapping orbit bound and organizer-produced12/16-bit projection evidence to the fixed full-width target, including the sparse-gap cycle-length condition.",
+      "evidence_ids": [
+        "experiment:rho12",
+        "experiment:rho16",
+        "experiment:rho12sparse",
+        "experiment:rho16sparse",
+        "proof:88-141"
+      ],
+      "limitations": "No full-width evidence or independence proof. Finite projected mask collisions are not full collisions. Dense probes use spacing1; sparse probes use ratio1/16 rather than full-width1/4096. Full-width extrapolation and narrow success margin remain material."
+    }
+  ],
   "lane": "exploratory",
-  "heuristics": []
+  "restrictions": [],
+  "rounds": 3,
+  "schema_version": 3,
+  "submission_state": "ready",
+  "target_profile": "blake3-r3-prefix-v1",
+  "experiment_manifest": "experiments/manifest.json"
 }
