@@ -1,20 +1,39 @@
 {
-  "schema_version": 3,
-  "submission_state": "draft",
-  "target_profile": "blake3-r1-prefix-v1",
   "attack_class": "ordinary-collision",
-  "rounds": 1,
-  "claim": {
-    "time_log2": 128.0,
-    "time_unit": "target-compressions",
-    "memory_log2_bytes": 0,
-    "preprocessing_log2": 0,
-    "success_probability": 0.39,
-    "nonuniform_advice_log2_bytes": 0
-  },
-  "restrictions": [],
-  "baseline_improved": "blake3-r1-nominal-v2",
+  "baseline_improved": "blake3-r3-nominal-v2",
   "certificate_manifest": "certificates/manifest.json",
+  "claim": {
+    "memory_log2_bytes": 20,
+    "nonuniform_advice_log2_bytes": 0,
+    "preprocessing_log2": 31,
+    "success_probability": 0.39,
+    "time_log2": 128.0613,
+    "time_unit": "target-compressions"
+  },
+  "heuristics": [
+    {
+      "id": "H-tail510",
+      "statement": "For the fixed complete BLAKE3-r3 salted 64-byte injection, independent uniform full-width salt and start satisfy mu>0, mu<=509*2^119, mu+lambda<=510*2^119 with probability at least0.39.",
+      "role": "score-critical",
+      "scope": "Exactly the salted64-byte full256-bit state injection and single bounded sparse-checkpoint attempt.",
+      "extrapolation": "Transfer the finite random-map tail/first-repeat bound and scoped projected-walk evidence to the fixed full-width target.",
+      "evidence_ids": [
+        "experiment:rho12",
+        "experiment:rho16",
+        "experiment:rho12sparse",
+        "experiment:rho16sparse",
+        "proof:86-145",
+        "experiment:rho12pruned",
+        "experiment:rho16pruned"
+      ],
+      "limitations": "No full-width evidence or independence proof. Finite projected mask collisions are not full collisions. Probe controller differs at endpoint records. Revised cap510 premise is distinct from the predecessor cap511 premise, with no fixed-target implication asserted."
+    }
+  ],
   "lane": "exploratory",
-  "heuristics": []
+  "restrictions": [],
+  "rounds": 3,
+  "schema_version": 3,
+  "submission_state": "ready",
+  "target_profile": "blake3-r3-prefix-v1",
+  "experiment_manifest": "experiments/manifest.json"
 }
