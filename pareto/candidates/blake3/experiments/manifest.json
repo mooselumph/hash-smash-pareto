@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "experiments": [
+    {
+      "id": "rho12",
+      "kind": "python-message-pairs-v1",
+      "scope": "Complete BLAKE3-r3 salted64-byte target, low12-bit walks. Sparse-checkpoint controller with m=2^(12/2), D=max(1,m/4096)=1, cap m+D; chronological and sorted checkpoint arrays. Every seed retained; seed-derived salt/start are reproducibility machinery, not ideal full-width coins.",
+      "hypothesis": "Projected exact-target walks yield distinct-predecessor mask collisions under the checkpoint controller. D=1 does not exercise sparse gaps; this is not full-width probability evidence or a full256-bit collision witness.",
+      "program": "experiments/rho_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ff0f000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "rho16",
+      "kind": "python-message-pairs-v1",
+      "scope": "Complete BLAKE3-r3 salted64-byte target, low16-bit walks. Sparse-checkpoint controller with m=2^(16/2), D=max(1,m/4096)=1, cap m+D; chronological and sorted checkpoint arrays. Every seed retained; seed-derived salt/start are reproducibility machinery, not ideal full-width coins.",
+      "hypothesis": "Projected exact-target walks yield distinct-predecessor mask collisions under the checkpoint controller. D=1 does not exercise sparse gaps; this is not full-width probability evidence or a full256-bit collision witness.",
+      "program": "experiments/rho_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ffff000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "rho12sparse",
+      "kind": "python-message-pairs-v1",
+      "scope": "Complete BLAKE3-r3 salted64-byte target, low12-bit walks, checkpoint controller with m=2^(12/2), D=m/16, cap m+D. D=4 exercises nontrivial checkpoint gaps and local recovery. Seed salt/start reproducibility is not ideal full-width randomness.",
+      "hypothesis": "The general sparse-gap checkpoint controller produces distinct-predecessor mask collisions at this finite width. Spacing ratio1/16 differs from full-width1/511; no full-width success probability follows.",
+      "program": "experiments/rho_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ff0f000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "rho16sparse",
+      "kind": "python-message-pairs-v1",
+      "scope": "Complete BLAKE3-r3 salted64-byte target, low16-bit walks, checkpoint controller with m=2^(16/2), D=m/16, cap m+D. D=16 exercises nontrivial checkpoint gaps and local recovery. Seed salt/start reproducibility is not ideal full-width randomness.",
+      "hypothesis": "The general sparse-gap checkpoint controller produces distinct-predecessor mask collisions at this finite width. Spacing ratio1/16 differs from full-width1/511; no full-width success probability follows.",
+      "program": "experiments/rho_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ffff000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "rho12pruned",
+      "kind": "python-message-pairs-v1",
+      "scope": "Complete BLAKE3-r3 salted64-byte target projected to low12 bits. m=2^(12/2), D=m/16; zero and indices at least m are omitted from search. q>=m is rejected. This matches the full attack endpoint pruning, but not its huge scale or spacing ratio.",
+      "hypothesis": "Pruned checkpoint controller produces distinct predecessor mask collisions with actual full-attack insertion and recovery guards. Not full-width evidence, an iid success estimate or measured attack work.",
+      "program": "experiments/pruned_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ff0f000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "rho16pruned",
+      "kind": "python-message-pairs-v1",
+      "scope": "Complete BLAKE3-r3 salted64-byte target projected to low16 bits. m=2^(16/2), D=m/16; zero and indices at least m are omitted from search. q>=m is rejected. This matches the full attack endpoint pruning, but not its huge scale or spacing ratio.",
+      "hypothesis": "Pruned checkpoint controller produces distinct predecessor mask collisions with actual full-attack insertion and recovery guards. Not full-width evidence, an iid success estimate or measured attack work.",
+      "program": "experiments/pruned_probe.py",
+      "event": {
+        "kind": "digest-xor-mask",
+        "mask_hex": "ffff000000000000000000000000000000000000000000000000000000000000",
+        "expected_hex": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  ]
+}
